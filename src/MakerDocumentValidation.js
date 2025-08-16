@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import {
   ArrowRight,
   ArrowLeft,
-  Bot,
   FileText,
-  Check,
   X,
   Eye,
   Square,
@@ -63,9 +61,6 @@ const App = () => {
   const [application, setApplication] = useState(mockApplication);
   const [selectedDocument, setSelectedDocument] = useState(null);
 
-  const allDocumentsValid = application.documents.every(
-    (doc) => doc.status === "valid"
-  );
   const needsReview = application.documents.some(
     (doc) => doc.status !== "valid" && doc.status !== "unchecked"
   );
@@ -88,14 +83,6 @@ const App = () => {
     }));
   };
 
-  const handleProceed = () => {
-    console.log(
-      "Proceeding to Data Cross-Check with application:",
-      application
-    );
-    // In a real app, this would navigate to the next page, passing the application data.
-  };
-
   const handleReturn = () => {
     console.log(
       "Returning application to user with remarks:",
@@ -109,21 +96,22 @@ const App = () => {
 const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-blue-50 flex items-center justify-center p-4 sm:p-6 font-sans">
+    <div className="min-h-screen bg-blue-50 flex items-center justify-center p-4 sm:p-6 font-sans transition-all duration-300">
       <button
         onClick={() => navigate(-1)}
-        className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg text-gray-700 hover:bg-gray-200 transition-colors transform hover:scale-105"
+        className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-white/90 backdrop-blur-md text-sc-blue-600 hover:text-sc-blue-700 px-4 py-2 rounded-xl shadow-lg border border-white/20 transition-all duration-200 hover:bg-white transform hover:scale-105"
+        title="Go Back"
       >
         <ArrowLeft className="w-5 h-5" />
-        Back
+        <span className="font-medium text-sm">Back</span>
       </button>
-      <div className="flex flex-col md:flex-row w-full max-w-[88rem] gap-8 items-start">
+      <div className="flex flex-col md:flex-row w-full max-w-[88rem] gap-8 items-start animate-in slide-in-from-bottom-4 duration-500">
         <div className="absolute top-6 right-6 flex items-center gap-2 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
           <Briefcase className="w-4 h-4" />
           Maker
         </div>
         {/* Main form container */}
-        <div className="w-full md:w-2/5 bg-white rounded-2xl shadow-2xl overflow-hidden p-6 sm:p-10 relative">
+        <div className="w-full md:w-2/5 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden p-6 sm:p-10 relative border border-white/30">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             Document Validation
           </h1>
@@ -140,7 +128,11 @@ const navigate = useNavigate();
             <ul className="space-y-4">
               {application.documents.map((doc) => (
                 <div key={doc.name}>
-                  <li className="flex items-center justify-between p-4 bg-gray-50 rounded-md shadow-sm border border-gray-200">
+                  <li className={`flex items-center justify-between p-4 bg-white/60 backdrop-blur-sm rounded-xl shadow-sm border transition-all duration-200 ${
+                    selectedDocument && selectedDocument.name === doc.name 
+                      ? 'border-blue-300 bg-blue-50/60 shadow-md' 
+                      : 'border-white/30 hover:bg-white/80'
+                  }`}>
                     <div className="flex items-center gap-4">
                       {doc.status === "valid" && (
                         <CheckSquare className="w-5 h-5 text-green-500" />
@@ -159,7 +151,7 @@ const navigate = useNavigate();
                       </span>
                       <button
                         onClick={() => setSelectedDocument(doc)}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1"
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-all duration-200 flex items-center gap-1 px-3 py-1 rounded-lg hover:bg-blue-50"
                       >
                         <Eye className="w-4 h-4" /> View
                       </button>
@@ -210,11 +202,11 @@ const navigate = useNavigate();
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="overflow-hidden mt-2 p-2 bg-gray-100 rounded-md"
+                        className="overflow-hidden mt-2 p-4 bg-white/70 backdrop-blur-sm rounded-xl border border-white/30"
                       >
                         <label
                           htmlFor={`remark-${doc.name}`}
-                          className="block text-sm font-medium text-gray-700 mb-1"
+                          className="block text-sm font-medium text-gray-700 mb-2"
                         >
                           Remark for {doc.name}
                         </label>
@@ -227,7 +219,7 @@ const navigate = useNavigate();
                             handleRemarkChange(doc.name, e.target.value)
                           }
                           placeholder="Add a remark for the applicant..."
-                          className="w-full p-2 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                          className="w-full p-3 rounded-xl border border-white/50 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm bg-white/80 backdrop-blur-sm"
                         ></textarea>
                       </motion.div>
                     )}
@@ -242,7 +234,7 @@ const navigate = useNavigate();
               type="button"
               onClick={handleReturn}
               disabled={!needsReview}
-              className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center rounded-xl border border-gray-300 bg-white/80 backdrop-blur-sm px-6 py-3 text-sm font-medium text-red-700 shadow-lg hover:bg-red-50 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Return to Applicant
@@ -256,7 +248,7 @@ const navigate = useNavigate();
               Proceed to Data Cross-Check
               <ArrowRight className="h-4 w-4 ml-2" />
             </button> */}
-            <Link to="/maker-data-validation" className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            <Link to="/maker-data-validation" className="inline-flex items-center rounded-xl border border-transparent bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-sm font-medium text-white shadow-lg hover:from-blue-700 hover:to-blue-800 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 transform hover:scale-105">
               Proceed to Data Validation
               <ArrowRight className="h-4 w-4 ml-2" />
             </Link>
@@ -264,24 +256,24 @@ const navigate = useNavigate();
         </div>
 
         {/* Document Viewer */}
-        <div className="w-full md:w-3/5 h-[80vh] bg-white rounded-2xl shadow-2xl p-6 border border-gray-200 overflow-y-auto sticky top-4 flex items-center justify-center">
+        <div className="w-full md:w-3/5 h-[80vh] bg-white/85 backdrop-blur-xl rounded-2xl shadow-2xl p-6 border border-white/30 overflow-y-auto sticky top-4 flex items-center justify-center">
           {selectedDocument ? (
             <div className="w-full h-full flex flex-col">
               <h3 className="text-lg font-bold text-gray-900 mb-2">
                 Viewing: {selectedDocument.name}
               </h3>
-              <div className="flex-grow bg-gray-200 rounded-md overflow-hidden flex items-center justify-center p-4">
+              <div className="flex-grow bg-gradient-to-br from-gray-50/50 to-white/30 backdrop-blur-sm rounded-xl overflow-hidden flex items-center justify-center p-4 border border-white/20">
                 <img
                   src={selectedDocument.file.url}
                   alt={selectedDocument.name}
-                  className="max-w-full max-h-full object-contain"
+                  className="max-w-full max-h-full object-contain transition-transform duration-200 hover:scale-105"
                 />
               </div>
             </div>
           ) : (
             <div className="text-center text-gray-500">
-              <Eye className="w-12 h-12 mx-auto mb-4" />
-              <p>Select a document from the list to view it here.</p>
+              <Eye className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">Select a document from the list to view it here.</p>
             </div>
           )}
         </div>

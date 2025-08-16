@@ -1,13 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  Briefcase,
-  CheckCircle,
-  User,
-  Award,
   ArrowRight,
-  ArrowLeft,
   Info,
   LayoutList,
   Grip,
@@ -16,22 +11,14 @@ import {
 } from "lucide-react";
 
 const makerPalette = {
-  bg: "bg-blue-50",
-  accent: "text-blue-600",
-  button: "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500",
-  card: "bg-blue-100",
-  borderColor: "border-blue-200",
+  bg: "bg-sc-blue-50",
+  accent: "text-sc-blue-600",
+  button: "bg-sc-blue-600 hover:bg-sc-blue-700 focus:ring-sc-blue-500",
+  card: "bg-sc-blue-100",
+  borderColor: "border-sc-blue-200",
 };
 
-const checkerPalette = {
-  bg: "bg-teal-50",
-  accent: "text-teal-600",
-  button: "bg-teal-600 hover:bg-teal-700 focus:ring-teal-500",
-  card: "bg-teal-100",
-  borderColor: "border-teal-200",
-};
-
-// Mock data for the dashboards
+// Mock data for maker tasks
 const makerTasks = [
   {
     id: "APP001",
@@ -56,40 +43,16 @@ const makerTasks = [
   },
 ];
 
-const checkerTasks = [
-  {
-    id: "APP004",
-    date: "2024-08-10",
-    maker: "Jane Doe",
-    status: "Ready for Verification",
-    ready: true,
-    loanType: "Personal Loan",
-  },
-  {
-    id: "APP005",
-    date: "2024-08-08",
-    maker: "John Smith",
-    status: "Ready for Verification",
-    ready: true,
-    loanType: "Home Loan",
-  },
-];
-
-const MemberDashboard = () => {
-  const [activeRole, setActiveRole] = useState("maker"); // 'maker' or 'checker'
+const MakerDashboard = () => {
   const [view, setView] = useState("card"); // 'card' or 'table'
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "ascending",
   });
-  const palette = activeRole === "maker" ? makerPalette : checkerPalette;
-
-  const handleRoleToggle = (role) => {
-    setActiveRole(role);
-  };
+  const palette = makerPalette;
 
   const sortedTasks = React.useMemo(() => {
-    const tasks = activeRole === "maker" ? [...makerTasks] : [...checkerTasks];
+    const tasks = [...makerTasks];
     if (sortConfig.key !== null) {
       tasks.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -102,7 +65,7 @@ const MemberDashboard = () => {
       });
     }
     return tasks;
-  }, [activeRole, sortConfig]);
+  }, [sortConfig]);
 
   const requestSort = (key) => {
     let direction = "ascending";
@@ -121,7 +84,7 @@ const MemberDashboard = () => {
     );
   };
 
-  const renderCardView = (tasks, isMaker) => (
+  const renderCardView = (tasks) => (
     <div className="space-y-4">
       {tasks.map((task) => (
         <div
@@ -138,41 +101,29 @@ const MemberDashboard = () => {
               Applied on: {task.date}
             </span>
             <span className="text-xs text-gray-500">Status: {task.status}</span>
+            <span className="text-xs text-gray-500">Type: {task.loanType}</span>
           </div>
-          {isMaker ? (
-            task.ready ? (
-              // <button
-              //   onClick={() => console.log(`Starting review for ${task.id}`)}
-              //   className={`mt-4 sm:mt-0 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors duration-200 ${palette.button} flex items-center gap-2`}
-              // >
-              //   Start Review <ArrowRight className="w-4 h-4" />
-              // </button>
-              <Link to="/maker-document-validation" className={`mt-4 sm:mt-0 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors duration-200 ${palette.button} flex items-center gap-2`}>Start Review <ArrowRight className="w-r h-4"/></Link>
-            ) : (
-              <button
-                onClick={() => console.log(`Viewing more info for ${task.id}`)}
-                className="mt-4 sm:mt-0 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition-colors duration-200 flex items-center gap-2"
-              >
-                More Info <Info className="w-4 h-4" />
-              </button>
-            )
+          {task.ready ? (
+            <Link 
+              to="/maker-document-validation" 
+              className={`mt-4 sm:mt-0 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors duration-200 ${palette.button} flex items-center gap-2`}
+            >
+              Start Review <ArrowRight className="w-4 h-4"/>
+            </Link>
           ) : (
-            // <button
-            //   onClick={() =>
-            //     console.log(`Starting verification for ${task.id}`)
-            //   }
-            //   className={`mt-4 sm:mt-0 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors duration-200 ${palette.button} flex items-center gap-2`}
-            // >
-            //   Start Verification <ArrowRight className="w-4 h-4" />
-            // </button>
-            <Link to="/checker-document-validation" className={`mt-4 sm:mt-0 px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors duration-200 ${palette.button} flex items-center gap-2`}>Start Verification <ArrowRight className="w-r h-4"/></Link>
+            <button
+              onClick={() => console.log(`Viewing more info for ${task.id}`)}
+              className="mt-4 sm:mt-0 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition-colors duration-200 flex items-center gap-2"
+            >
+              More Info <Info className="w-4 h-4" />
+            </button>
           )}
         </div>
       ))}
     </div>
   );
 
-  const renderTableView = (tasks, isMaker) => (
+  const renderTableView = (tasks) => (
     <div className="overflow-x-auto shadow-md rounded-lg">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
@@ -201,7 +152,7 @@ const MemberDashboard = () => {
               onClick={() => requestSort("date")}
             >
               <div className="flex items-center">
-                {isMaker ? "Applied On" : "Last Updated"} {getSortIcon("date")}
+                Applied On {getSortIcon("date")}
               </div>
             </th>
             <th
@@ -234,32 +185,19 @@ const MemberDashboard = () => {
                 {task.status}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                {isMaker ? (
-                  task.ready ? (
-                    <button
-                      // onClick={() => console.log(`Starting review for ${task.id}`)}
-                      className={`text-white px-4 py-2 rounded-lg text-xs ${palette.button} flex items-center gap-2`}
-                    >
-                      Start Review
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() =>
-                        console.log(`Viewing more info for ${task.id}`)
-                      }
-                      className="text-gray-700 bg-gray-200 border border-gray-300 px-4 py-2 rounded-lg text-xs shadow-sm hover:bg-gray-100 transition-colors flex items-center gap-2"
-                    >
-                      More Info
-                    </button>
-                  )
-                ) : (
+                {task.ready ? (
                   <button
-                    onClick={() =>
-                      console.log(`Starting verification for ${task.id}`)
-                    }
+                    onClick={() => navigate("/maker-document-validation")}
                     className={`text-white px-4 py-2 rounded-lg text-xs ${palette.button} flex items-center gap-2`}
                   >
-                    Start Verification
+                    Start Review
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => console.log(`Viewing more info for ${task.id}`)}
+                    className="text-gray-700 bg-gray-200 border border-gray-300 px-4 py-2 rounded-lg text-xs shadow-sm hover:bg-gray-100 transition-colors flex items-center gap-2"
+                  >
+                    More Info
                   </button>
                 )}
               </td>
@@ -270,10 +208,14 @@ const MemberDashboard = () => {
     </div>
   );
 
-  const navigate = useNavigate();
+const navigate = useNavigate();
+
   return (
     <motion.div
       className={`min-h-screen font-sans transition-colors duration-500 ${palette.bg} p-8`}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
       <div className="w-full max-w-7xl mx-auto">
         <header className="flex justify-between items-center mb-8">
@@ -285,31 +227,14 @@ const MemberDashboard = () => {
               <h1 className="text-xl md:text-2xl font-bold text-gray-900">
                 Hello, John Doe
               </h1>
-              <p className="text-sm text-gray-500">Welcome to the dashboard.</p>
+              <p className="text-sm text-gray-500">Maker Dashboard - Review new applications</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-white rounded-full p-1 shadow-md">
-            <button
-              onClick={() => handleRoleToggle("maker")}
-              className={`flex-1 px-4 py-2 rounded-full font-medium text-sm transition-colors duration-300 ${
-                activeRole === "maker"
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "text-gray-500 hover:bg-gray-100"
-              }`}
-            >
+          <div className="flex items-center gap-2">
+            <div className="px-4 py-2 bg-sc-blue-600 text-white rounded-full text-sm font-medium shadow-sm">
               Maker
-            </button>
-            <button
-              onClick={() => handleRoleToggle("checker")}
-              className={`flex-1 px-4 py-2 rounded-full font-medium text-sm transition-colors duration-300 ${
-                activeRole === "checker"
-                  ? "bg-teal-600 text-white shadow-lg"
-                  : "text-gray-500 hover:bg-gray-100"
-              }`}
-            >
-              Checker
-            </button>
+            </div>
           </div>
         </header>
 
@@ -338,54 +263,25 @@ const MemberDashboard = () => {
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeRole + view}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            {activeRole === "maker" ? (
-              <div className="mt-8 space-y-6">
-                <h2 className={`text-xl font-bold ${palette.accent}`}>
-                  Maker Tasks: New Applications
-                </h2>
-                {makerTasks.length > 0 ? (
-                  view === "card" ? (
-                    renderCardView(sortedTasks, true)
-                  ) : (
-                    renderTableView(sortedTasks, true)
-                  )
-                ) : (
-                  <p className="text-gray-500 text-center py-8">
-                    No new applications to review.
-                  </p>
-                )}
-              </div>
+        <div className="mt-8 space-y-6">
+          <h2 className={`text-xl font-bold ${palette.accent}`}>
+            Maker Tasks: New Applications
+          </h2>
+          {makerTasks.length > 0 ? (
+            view === "card" ? (
+              renderCardView(sortedTasks)
             ) : (
-              <div className="mt-8 space-y-6">
-                <h2 className={`text-xl font-bold ${palette.accent}`}>
-                  Checker Tasks: Ready for Verification
-                </h2>
-                {checkerTasks.length > 0 ? (
-                  view === "card" ? (
-                    renderCardView(sortedTasks, false)
-                  ) : (
-                    renderTableView(sortedTasks, false)
-                  )
-                ) : (
-                  <p className="text-gray-500 text-center py-8">
-                    No applications awaiting verification.
-                  </p>
-                )}
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+              renderTableView(sortedTasks)
+            )
+          ) : (
+            <p className="text-gray-500 text-center py-8">
+              No new applications to review.
+            </p>
+          )}
+        </div>
       </div>
     </motion.div>
   );
 };
 
-export default MemberDashboard;
+export default MakerDashboard;

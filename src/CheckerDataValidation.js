@@ -1,22 +1,16 @@
 import React, { useState } from "react";
 import {
-  ArrowRight,
   ArrowLeft,
   X,
   Eye,
-  CheckSquare,
   Users,
   Briefcase,
   CreditCard,
-  FileText,
-  LayoutList,
   Check,
-  RotateCcw,
   PanelLeft,
   PanelTop,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
 
 const mockApplication = {
   id: "APP001",
@@ -85,9 +79,9 @@ const mockApplication = {
 };
 
 const CheckerDataValidation = () => {
-  const [application] = useState(mockApplication);
   const [activeTabs, setActiveTabs] = useState([]);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [isDataPanelVisible, setIsDataPanelVisible] = useState(true);
   const [isDataPanelHovered, setIsDataPanelHovered] = useState(false);
   const [stackingLayout, setStackingLayout] = useState("horizontal");
   const [dataStatus] = useState({
@@ -126,40 +120,39 @@ const CheckerDataValidation = () => {
     setCheckerRemarks(e.target.value);
   };
 
-  const handleFinalApproval = () => {
-    console.log("Application has been finally approved:", {
-      ...application,
-      checkerRemarks,
-    });
-    // In a real app, this would change the application status to 'Approved'
-  };
-
-  const handleReturnToMaker = () => {
-    console.log("Returning to Maker:", application);
-    // In a real app, this would change the application status and notify the Maker.
-  };
-
   const renderDataSection = (title, icon, data, fields) => (
-    <section className="mb-6 pb-4 border-b border-gray-200">
-      <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-4">
-        {icon} {title}
+    <section className="mb-6 pb-4 border-b border-white/20">
+      <h2 className="text-lg font-semibold text-sc-green-700 flex items-center gap-3 mb-4 px-2">
+        <div className="p-2 rounded-lg bg-gradient-to-br from-sc-green-100 to-sc-blue-100">
+          {icon}
+        </div>
+        {title}
       </h2>
       <div className="space-y-3">
         {fields.map((field) => (
           <div
             key={field.key}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
+            className="flex items-center justify-between p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-white/30 hover:bg-white/80 transition-all duration-200"
           >
             <span className="text-sm font-medium text-gray-700">
               {field.label}:
             </span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">{data[field.key]}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-800 font-medium bg-gray-50/80 px-3 py-1 rounded-lg">{data[field.key]}</span>
               {dataStatus[field.key] === "verified" && (
-                <Check className="w-6 h-6 text-green-500 p-1 rounded-full bg-green-100" />
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-sc-green-500 to-sc-green-600 text-white shadow-lg">
+                  <Check className="w-4 h-4" />
+                </div>
               )}
               {dataStatus[field.key] === "mismatch" && (
-                <X className="w-6 h-6 text-red-500 p-1 rounded-full bg-red-100" />
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg">
+                  <X className="w-4 h-4" />
+                </div>
+              )}
+              {dataStatus[field.key] === "unchecked" && (
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-400">
+                  <span className="text-xs">?</span>
+                </div>
               )}
             </div>
           </div>
@@ -168,51 +161,61 @@ const CheckerDataValidation = () => {
     </section>
   );
 
-  const sidebarWidth = "md:w-[25%]";
-  const dataPanelWidth = "md:w-[25%]";
-
-  // This class controls the full-screen layout on hover
-  const getCentralViewerMargin = () => {
-    let ml = isDataPanelHovered ? "ml-[25%]" : "ml-[0%]";
-    let mr = isSidebarHovered ? "mr-[15%]" : "mr-[0%]";
-    return `${ml} ${mr}`;
-  };
-
-  const navigate = useNavigate();
+  // Updated width calculations for functionality-focused layout
+  const sidebarWidth = 'md:w-1/5'; // 20% for document sidebar
+  const dataPanelWidth = "md:w-2/5"; // 40% for data panel (always visible)
 
   return (
-    <div className="min-h-screen bg-teal-50 flex items-center justify-center p-4 sm:p-6 font-sans">
-      <button
-        onClick={() => navigate(-1)}
-        className={`fixed top-4 left-20 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg text-gray-700 hover:bg-gray-200 transform hover:scale-105 transition-all duration-500 ease-in-out ${
-          isDataPanelHovered ? "transform translate-x-[470%]" : ""
-        }`}
-      >
-        <ArrowLeft className="w-5 h-5" />
-        Exit
-      </button>
-      <div className="absolute top-6 right-20 flex items-center gap-2 bg-teal-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-        <Briefcase className="w-4 h-4" />
-        Checker
-      </div>
-      <div className="relative h-[90vh] w-full max-w-[88rem] flex items-center">
-        {/* Data Sidebar (Left) */}
+    <div className="min-h-screen relative overflow-hidden font-sans bg-sc-green-50">
+
+      <div className="relative z-10 min-h-screen">
+        {/* Fixed Header */}
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center p-6 pointer-events-none">
+          {/* Center Title */}
+          <div className="flex items-center gap-3 bg-gradient-to-r from-sc-green-600 to-sc-green-700 text-white px-3 py-1 rounded-full shadow-lg backdrop-blur-md border border-white/20 pointer-events-auto">
+            <Briefcase className="w-4 h-4" />
+            Checker
+          </div>
+        </div>
+
+        {/* Main Content Container */}
+        <div className="flex items-center justify-center p-6 pt-24 min-h-screen">
+          <div className="relative h-[85vh] w-full max-w-[88rem] flex items-center">
+        {/* Data Sidebar (Left) - With Hide/Show Functionality */}
         <div
-          className={`fixed top-0 left-0 h-full bg-white z-50 shadow-2xl transition-transform duration-500 ease-in-out ${dataPanelWidth} flex-shrink-0 ${
-            isDataPanelHovered
-              ? "transform translate-x-0"
-              : "transform -translate-x-[85%]"
+          className={`fixed top-0 left-0 h-full bg-white/90 backdrop-blur-xl z-40 shadow-2xl transition-all duration-300 ease-out ${dataPanelWidth} flex-shrink-0 border-r border-white/30 ${
+            isDataPanelVisible || isDataPanelHovered ? 'translate-x-0' : '-translate-x-[85%]'
           }`}
-          onMouseEnter={() => setIsDataPanelHovered(true)}
+          onMouseEnter={() => {
+            setIsDataPanelHovered(true);
+            if (!isDataPanelVisible) setIsDataPanelVisible(true);
+          }}
+          onMouseLeave={() => setIsDataPanelHovered(false)}
         >
-          <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200">
-            <h3 className="text-lg font-bold text-teal-600">Data</h3>
-            <button
-              onClick={() => setIsDataPanelHovered(false)}
-              className="text-gray-500 hover:text-gray-900"
-            >
-              <X className="w-5 h-5" />
-            </button>
+          <div className="flex items-center justify-between p-6 pb-4 border-b border-white/30">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-sc-green-600 to-sc-blue-600 bg-clip-text text-transparent">Data Review</h3>
+            {(isDataPanelVisible || isDataPanelHovered) && (
+              <div className="flex items-center gap-2">
+                {/* Back Button */}
+                <button 
+                  onClick={() => window.history.back()}
+                  className="flex items-center gap-1 text-sc-green-500 hover:text-sc-green-700 transition-colors p-1 hover:bg-white/50 rounded-lg"
+                  title="Go Back"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="text-xs font-medium">Return To Document Review
+                  </span>
+                </button>
+                {/* Hide Panel Button */}
+                <button 
+                  onClick={() => setIsDataPanelVisible(false)} 
+                  className="text-sc-green-500 hover:text-sc-green-700 transition-colors p-1 hover:bg-white/50 rounded-lg"
+                  title="Hide Data Panel"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            )}
           </div>
           <div className="h-[calc(100vh-100px)] overflow-y-auto px-6 py-4">
             {renderDataSection(
@@ -250,21 +253,21 @@ const CheckerDataValidation = () => {
               ]
             )}
 
-            <div className="mt-8 p-4 rounded-md border border-gray-300 bg-gray-50">
-              <h4 className="text-sm font-medium text-gray-900">
+            <div className="mt-8 p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-white/30">
+              <h4 className="text-sm font-semibold text-sc-green-700 mb-3">
                 Maker's Final Remarks:
               </h4>
-              <p className="mt-1 text-sm text-gray-600 italic">
+              <p className="text-sm text-gray-800 bg-gray-50/80 p-4 rounded-lg border border-gray-200/50">
                 {mockApplication.makerRemarks || "No remarks provided."}
               </p>
             </div>
 
-            <div className="mt-8">
+            <div className="mt-6 p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-white/30">
               <label
                 htmlFor="checker-remarks"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-semibold text-sc-green-700 mb-3"
               >
-                Checker's Remarks
+                Checker's Final Remarks
               </label>
               <textarea
                 id="checker-remarks"
@@ -272,101 +275,98 @@ const CheckerDataValidation = () => {
                 rows="4"
                 value={checkerRemarks}
                 onChange={handleCheckerRemarkChange}
-                placeholder="Add your comments here for the Maker or for record..."
-                className="mt-1 w-full p-3 rounded-md border border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm"
+                placeholder="Add your final comments here for record or future reference..."
+                className="w-full p-4 rounded-xl border border-white/30 bg-white/80 backdrop-blur-sm shadow-sm focus:border-sc-green-500 focus:ring-2 focus:ring-sc-green-500/20 focus:outline-none sm:text-sm transition-all duration-200 resize-none"
               ></textarea>
             </div>
 
-            <div className="flex justify-between mt-6">
+            <div className="flex justify-between gap-4 mt-6">
               <button
-                onClick={handleReturnToMaker}
-                className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
+                onClick={() => console.log('Return to Maker')}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl border border-red-200 bg-white/80 backdrop-blur-sm text-red-700 font-medium shadow-sm hover:bg-red-50 hover:border-red-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all duration-200"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
                 Return to Maker
               </button>
-              {/* <button
-                onClick={handleFinalApproval}
-                className="inline-flex items-center rounded-md border border-transparent bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-200"
+              <button
+                onClick={() => console.log('Mark as Verified')}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-sc-green-600 to-sc-green-700 text-white font-medium shadow-lg hover:from-sc-green-700 hover:to-sc-green-800 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-sc-green-500/20 transition-all duration-200 transform hover:scale-105"
               >
-                Final Approval
-                <Check className="h-4 w-4 ml-2" />
-              </button> */}
-              <Link to="/verified-loans-dashboard" className="inline-flex items-center rounded-md border border-transparent bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-200">
+                <Check className="h-4 w-4" />
                 Mark As Verified
-              </Link>
+              </button>
             </div>
           </div>
         </div>
 
         {/* Document Viewer (Central Column) */}
-        <div
-          className={`w-full h-[90vh] bg-white rounded-2xl shadow-2xl p-6 border border-gray-200 overflow-y-auto sticky top-4 transition-all duration-500 ease-in-out ${getCentralViewerMargin()}`}
-        >
-          <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-            <h3 className="text-lg font-bold text-gray-900">Document Viewer</h3>
+        <div className={`w-full h-[85vh] bg-white/85 backdrop-blur-xl rounded-2xl shadow-2xl p-6 border border-white/30 overflow-y-auto sticky top-4 transition-all duration-300 ease-out mx-auto ${
+          (isDataPanelVisible || isDataPanelHovered) ? 'ml-[40%]' : 'ml-[6%]'
+        } ${
+          isSidebarHovered ? 'mr-[20%]' : 'mr-0'
+        }`}>
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/30">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-sc-green-600 to-sc-blue-600 bg-clip-text text-transparent">Document Viewer</h3>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setStackingLayout("horizontal")}
-                className={`p-2 rounded-full transition-colors duration-200 ${
+                className={`p-3 rounded-xl transition-all duration-200 ${
                   stackingLayout === "horizontal"
-                    ? "bg-gray-200 text-gray-800"
-                    : "text-gray-400 hover:bg-gray-100"
+                    ? "bg-gradient-to-r from-sc-green-500 to-sc-green-600 text-white shadow-lg"
+                    : "text-sc-green-600 hover:bg-sc-green-50 bg-white/70 border border-sc-green-200"
                 }`}
               >
                 <PanelLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setStackingLayout("vertical")}
-                className={`p-2 rounded-full transition-colors duration-200 ${
+                className={`p-3 rounded-xl transition-all duration-200 ${
                   stackingLayout === "vertical"
-                    ? "bg-gray-200 text-gray-800"
-                    : "text-gray-400 hover:bg-gray-100"
+                    ? "bg-gradient-to-r from-sc-green-500 to-sc-green-600 text-white shadow-lg"
+                    : "text-sc-green-600 hover:bg-sc-green-50 bg-white/70 border border-sc-green-200"
                 }`}
               >
                 <PanelTop className="w-5 h-5" />
               </button>
             </div>
           </div>
-          <div className="flex-grow bg-gray-200 rounded-md flex items-center justify-center overflow-hidden h-[90%] p-2">
+          <div className="flex-grow bg-gradient-to-br from-gray-50/50 to-white/30 backdrop-blur-sm rounded-xl flex items-center justify-center overflow-hidden h-[85%] p-4 border border-white/20">
             <AnimatePresence>
               {activeTabs.length === 0 ? (
                 <motion.div
                   key="placeholder"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-center text-gray-500 flex flex-col items-center justify-center h-full"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="text-center text-sc-green-600 flex flex-col items-center justify-center h-full"
                 >
-                  <Eye className="w-12 h-12 mx-auto mb-4" />
-                  <p>
-                    Hover on the sidebars to select a document or verify data.
+                  <div className="p-6 rounded-2xl bg-white/60 backdrop-blur-sm border border-white/30 mb-6">
+                    <Eye className="w-16 h-16 mx-auto mb-4 text-sc-green-500" />
+                  </div>
+                  <h4 className="text-lg font-semibold mb-2">Ready to Review</h4>
+                  <p className="text-sm text-gray-600 max-w-md">
+                    Hover on the sidebars to access documents for validation or verify applicant data.
                   </p>
                 </motion.div>
               ) : (
-                <div
-                  className={`w-full h-full flex gap-2 ${
-                    stackingLayout === "horizontal" ? "flex-row" : "flex-col"
-                  }`}
-                >
+                <div className={`w-full h-full flex gap-4 ${stackingLayout === "horizontal" ? "flex-row" : "flex-col"}`}>
                   {activeTabs.map((tab) => (
                     <motion.div
                       key={tab.name}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="relative flex-1 bg-white rounded-md overflow-hidden"
+                      className="relative flex-1 bg-white/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-white/30"
                     >
                       <button
                         onClick={() => closeTab(tab.name)}
-                        className="absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white hover:bg-red-600 z-10"
+                        className="absolute top-3 right-3 p-2 rounded-full bg-red-500/90 backdrop-blur-sm text-white hover:bg-red-600 z-10 transition-all duration-200 shadow-lg hover:scale-110"
                       >
                         <X className="w-4 h-4" />
                       </button>
                       <img
                         src={tab.file.url}
                         alt={tab.name}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain p-2"
                       />
                     </motion.div>
                   ))}
@@ -378,36 +378,37 @@ const CheckerDataValidation = () => {
 
         {/* Document Sidebar (Right) */}
         <div
-          className={`fixed top-0 right-0 h-full bg-white z-50 shadow-2xl transition-transform duration-500 ease-in-out md:w-[15%] flex-shrink-0 ${
-            isSidebarHovered
-              ? "transform translate-x-0"
-              : "transform translate-x-[85%]"
-          }`}
+          className={`fixed top-0 right-0 h-full bg-white/90 backdrop-blur-xl z-40 shadow-2xl transition-all duration-300 ease-out ${sidebarWidth} flex-shrink-0 border-l border-white/30 ${isSidebarHovered ? 'translate-x-0' : 'translate-x-[80%]'}`}
           onMouseEnter={() => setIsSidebarHovered(true)}
           onMouseLeave={() => setIsSidebarHovered(false)}
         >
-          <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200">
-            <h3 className="text-lg font-bold text-teal-600">Documents</h3>
-            <button
-              onClick={() => setIsSidebarHovered(false)}
-              className="text-gray-500 hover:text-gray-900"
-            >
+          <div className="flex items-center justify-between p-6 pb-4 border-b border-white/30">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-sc-blue-600 to-sc-green-600 bg-clip-text text-transparent">Documents</h3>
+            <button onClick={() => setIsSidebarHovered(false)} className="text-sc-blue-500 hover:text-sc-blue-700 transition-colors p-1 hover:bg-white/50 rounded-lg">
               <X className="w-5 h-5" />
             </button>
           </div>
-          <ul className="h-[calc(100vh-100px)] overflow-y-auto px-6 py-4 space-y-2">
-            {mockApplication.documents.map((doc) => (
+          <ul className="h-[calc(100vh-100px)] overflow-y-auto px-6 py-4 space-y-3">
+            {mockApplication.documents.map((doc, index) => (
               <li
                 key={doc.name}
-                className="p-3 bg-gray-100 rounded-md cursor-pointer hover:bg-teal-100 transition-colors"
+                className={`p-4 bg-white/60 backdrop-blur-sm rounded-xl cursor-pointer border border-white/30 transition-all duration-200 hover:bg-white/80 hover:shadow-lg hover:scale-105 ${
+                  activeTabs.find(tab => tab.name === doc.name) ? 'ring-2 ring-sc-green-500 bg-sc-green-50/80' : ''
+                }`}
                 onClick={() => openDocument(doc)}
               >
-                <span className="text-sm font-medium text-gray-700">
-                  {doc.name}
-                </span>
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${doc.status === 'valid' ? 'bg-sc-green-500' : 'bg-orange-400'}`}></div>
+                  <span className="text-sm font-medium text-gray-800">{doc.name}</span>
+                </div>
+                {doc.remark && (
+                  <p className="text-xs text-gray-600 mt-2 pl-6">{doc.remark}</p>
+                )}
               </li>
             ))}
           </ul>
+        </div>
+          </div>
         </div>
       </div>
     </div>
