@@ -1,0 +1,184 @@
+import React, { useEffect, useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import jsPDF from "jspdf";
+
+export function Transactions({ loggedInUserId }) {
+  const [allTransactions] = useState([
+    { userId: 1, id: "TXN001", type: "Salary", date: "2025-07-30", amount: "50000", status: "Approved", actions: ["view", "edit"] },
+    { userId: 2, id: "TXN123", type: "Vendor", date: "2022-04-28", amount: "4000", status: "Approved", actions: ["view"] },
+    { userId: 2, id: "TXN222", type: "Salary", date: "2025-07-30", amount: "5000", status: "Pending", actions: ["view", "edit"] },
+    { userId: 1, id: "TXN151", type: "Salary", date: "2023-03-27", amount: "54000", status: "Rejected", actions: ["view"] },
+    { userId: 1, id: "TXN177", type: "Loan", date: "2025-06-04", amount: "15100", status: "Approved", actions: ["view", "edit"] },
+  ]);
+
+  const [transactions, setTransactions] = useState([]);
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [currentUserId] = useState(loggedInUserId);
+  const [selected, setSelected] = useState([]);
+
+  // Load current user's transactions
+  useEffect(() => {
+    if (!allTransactions) return;
+    const userTransactions = allTransactions.filter(txn => txn.userId === currentUserId);
+    setTransactions(userTransactions);
+    setFilteredTransactions(userTransactions);
+  }, [allTransactions, currentUserId]);
+
+  // Apply Filters
+  const applyFilters = () => {
+    let data = [...transactions];
+    if (statusFilter) {
+      data = data.filter(txn => txn.status === statusFilter);
+    }
+    if (dateFilter) {
+      data = data.filter(txn => txn.date === dateFilter);
+    }
+    setFilteredTransactions(data);
+  };
+
+  // Mark selected as viewed
+  const markAsViewed = () => {
+    if (selected.length === 0) {
+      alert("Please select at least one transaction");
+      return;
+    }
+    const updated = transactions.map(txn =>
+      selected.includes(txn.id) ? { ...txn, status: "Mark as Viewed" } : txn
+    );
+    setTransactions(updated);
+    setFilteredTransactions(updated);
+    setSelected([]);
+  };
+
+  // Export selected transactions to PDF
+  const exportToPDF = () => {
+    if (selected.length === 0) {
+      alert("Please select at least one transaction");
+      return;
+    }
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Selected Transactions", 20, 20);
+
+    let y = 40;
+    selected.forEach((id, index) => {
+      const txn = transactions.find(t => t.id === id);
+      if (txn) {
+        doc.text(
+          ${index + 1}) ID: ${txn.id} | Type: ${txn.type} | Date: ${txn.date} | Amount: ${txn.amount} | Status: ${txn.status},
+          20,
+          y
+        );
+        y += 10;
+      }
+    });
+    doc.save("transactions.pdf");
+  };
+
+  return (
+    <div className="container mt-4">
+      <h4 className="mb-4">View & Manage Transactions</h4>
+
+      {/* Filters */}
+      <div className="row g-2 mb-3">
+        <div className="col-md-3">
+          <input
+            type="date"
+            className="form-control"
+            value={dateFilter}
+            onChange={e => setDateFilter(e.target.value)}
+          />
+        </div>
+        <div className="col-md-3">
+          <select
+            className="form-select"
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value)}
+          >
+            <option value="">Status</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Pending">Pending</option>
+            <option value="Mark as Viewed">Mark as Viewed</option>
+          </select>
+        </div>
+        <div className="col-md-3">
+          <button className="btn btn-outline-info w-100" onClick={applyFilters}>
+            Apply filters
+          </button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <table className="table table-bordered align-middle">
+        <thead className="table-light">
+          <tr>
+            <th><input type="checkbox" onChange={(e) => {
+              if (e.target.checked) {
+                setSelected(filteredTransactions.map(txn => txn.id));
+              } else {
+                setSelected([]);
+              }
+            }} /></th>
+            <th>Transaction ID</th>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredTransactions.length > 0 ? (
+            filteredTransactions.map(txn => (
+              <tr key={txn.id}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(txn.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelected([...selected, txn.id]);
+                      } else {
+                        setSelected(selected.filter(id => id !== txn.id));
+                      }
+                    }}
+                  />
+                </td>
+                <td>{txn.id}</td>
+                <td>{txn.type}</td>
+                <td>{txn.date}</td>
+                <td>{txn.amount}</td>
+                <td>{txn.status}</td>
+                <td>
+                  {txn.actions.map((action, index) => (
+                    <button key={index} className="btn btn-sm btn-outline-dark me-2">
+                      {action}
+                    </button>
+                  ))}
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7" className="text-center text-muted">
+                No transactions found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      {/* Buttons */}
+      <div className="d-flex justify-content-end gap-2 mt-4">
+        <button className="btn btn-primary" onClick={markAsViewed}>Mark as Viewed</button>
+        <button className="btn btn-success" onClick={() => alert("Archive functionality not implemented")}>Archive Selected</button>
+        <button className="btn btn-outline-primary" onClick={exportToPDF}>Export to Excel</button>
+      </div>
+    </div>
+  );
+}
+
+export default Transactions;
